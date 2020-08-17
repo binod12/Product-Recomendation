@@ -46,12 +46,12 @@ namespace Capita001ML.ConsoleApp
         {
             // Data process configuration with pipeline data transformations 
             var dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey("Product", "Product")
-                                      .Append(mlContext.Transforms.Categorical.OneHotEncoding(new[] { new InputOutputColumnPair("Feature", "Feature") }))
-                                      .Append(mlContext.Transforms.CopyColumns("Features", "Feature"))
+                                      .Append(mlContext.Transforms.Text.FeaturizeText("Feature_tf", "Feature"))
+                                      .Append(mlContext.Transforms.CopyColumns("Features", "Feature_tf"))
                                       .Append(mlContext.Transforms.NormalizeMinMax("Features", "Features"))
                                       .AppendCacheCheckpoint(mlContext);
             // Set the training algorithm 
-            var trainer = mlContext.MulticlassClassification.Trainers.OneVersusAll(mlContext.BinaryClassification.Trainers.AveragedPerceptron(labelColumnName: "Product", numberOfIterations: 10, featureColumnName: "Features"), labelColumnName: "Product")
+            var trainer = mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy(labelColumnName: "Product", featureColumnName: "Features")
                                       .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
 
             var trainingPipeline = dataProcessPipeline.Append(trainer);
